@@ -1,0 +1,54 @@
+---
+description: "Instructions for streaming audio to a Bluetooth speaker through a USB Bluetooth dongle in ESPHome."
+title: "USB Bluetooth Speaker"
+---
+import APIRef from '@components/APIRef.astro';
+
+The `usb_bluetooth` speaker platform streams audio to a Bluetooth speaker (an A2DP sink), through a USB Bluetooth
+dongle set up with the [USB Bluetooth](/components/usb_bluetooth/) component and its `a2dp_speaker` option.
+
+Bluetooth audio is 16-bit stereo at 44.1 kHz. To play audio at another rate, put a
+[Resampler Speaker](/components/speaker/resampler/) in front of this speaker.
+
+> [!WARNING]
+> Audio and voice components consume a significant amount of resources (RAM, CPU) on the device. Bluetooth
+> components add to that. A board with PSRAM, such as an ESP32-P4 or ESP32-S3 with PSRAM, is recommended.
+
+```yaml
+# Example configuration entry
+usb_bluetooth:
+  - bluedroid: true
+    a2dp_speaker: 4C:72:74:XX:XX:XX
+
+esp32_ble:
+
+speaker:
+  - platform: usb_bluetooth
+    id: bt_speaker
+```
+
+## Configuration Variables
+
+- **buffer_duration** (*Optional*, [Time](/guides/configuration-types/#time)): How much audio the buffer between
+  ESPHome and Bluetooth holds. Defaults to `500ms`.
+- **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The
+  [USB Bluetooth](/components/usb_bluetooth/) entry to use. It must have `a2dp_speaker`. Defaults to the only one in
+  YAML.
+- All other options from [Speaker Component](/components/speaker/).
+
+The `sample_rate` (`44100`), `num_channels` (`2`) and `bits_per_sample` (`16bit`) are fixed by Bluetooth audio. They
+can be read by a resampler or mixer speaker that sends audio to this speaker.
+
+## Behavior
+
+- While the speaker is not connected, audio is dropped, so a media player does not wait for a speaker that is off.
+- The stream to the speaker starts when audio comes and is suspended a few seconds after it stops.
+- The volume is sent to the speaker over AVRCP (absolute volume). A speaker without absolute volume gets the samples
+  scaled instead. Mute sends silence.
+
+## See Also
+
+- [USB Bluetooth](/components/usb_bluetooth/)
+- [Speaker Component](/components/speaker/)
+- [Speaker Media Player](/components/media_player/speaker/)
+- <APIRef text="usb_bluetooth_speaker.h" path="usb_bluetooth/speaker/usb_bluetooth_speaker.h" />
