@@ -48,6 +48,10 @@ The [USB Host](/components/usb_host/) component is loaded automatically; configu
   stream audio to, using the [USB Bluetooth Speaker](/components/speaker/usb_bluetooth/) platform. Requires
   `bluedroid: true`, and turns on Classic Bluetooth (BR/EDR) in Bluedroid next to Bluetooth LE. Not needed with a
   [Speaker Select](#speaker-select); a speaker chosen there takes the place of this one.
+- **on_speaker_volume** (*Optional*, [Automation](/automations/)): Runs when the volume is changed on the speaker
+  itself. The level from `0` to `1` is in the variable `x`. Use it to let a media player follow the speaker; see
+  [Speaker Buttons and Volume](#speaker-buttons-and-volume). Needs `a2dp_speaker` or a
+  [Speaker Select](#speaker-select).
 
 With `vid` and `pid` left at `0`, the component takes the first connected device with a Bluetooth controller interface
 (USB class `E0`, subclass `01`, protocol `01`) and ignores every other device. More than one entry is allowed, but then
@@ -145,6 +149,36 @@ text_sensor:
   must have `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to the only one in YAML.
 - **connected_speaker** (*Optional*): The connected speaker. All options from
   [Text Sensor](/components/text_sensor/#config-text_sensor).
+
+### Speaker Buttons and Volume
+
+The `usb_bluetooth` event platform reports the buttons pressed on the speaker, with the event types `play`, `pause`,
+`stop`, `next` and `previous`. A speaker without absolute volume also sends `volume_up` and `volume_down`. In Home
+Assistant the event can start an automation, for example to skip to the next song in Music Assistant. Which event a
+button sends is up to the speaker: many send `play` both to start and to pause.
+
+The volume buttons of a speaker with absolute volume change the speaker's own volume. With `on_speaker_volume`, the
+media player follows it, so Home Assistant shows the same level.
+
+```yaml
+usb_bluetooth:
+  - bluedroid: true
+    a2dp_speaker: 4C:72:74:XX:XX:XX
+    on_speaker_volume:
+      - media_player.volume_set:
+          id: bt_media_player
+          volume: !lambda return x;
+
+event:
+  - platform: usb_bluetooth
+    speaker_buttons:
+      name: "Speaker buttons"
+```
+
+- **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The `usb_bluetooth` entry to use. It
+  must have `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to the only one in YAML.
+- **speaker_buttons** (**Required**): The buttons on the speaker. All options from
+  [Event](/components/event/#config-event).
 
 ## Examples
 
