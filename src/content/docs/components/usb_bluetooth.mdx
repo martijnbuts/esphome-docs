@@ -110,7 +110,8 @@ ESP32 itself. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_
 The `usb_bluetooth` select platform chooses the speaker the way a phone does. Its options are the current speaker,
 the audio devices (speakers, headphones, radios) found by the last search, and **Search for speakers**, which searches
 for 13 seconds. Put the speaker in pairing mode, choose **Search for speakers**, and choose the speaker once it is
-listed. The choice is kept in flash.
+listed. The choice is kept in flash, with the name the speaker reports when it connects (also for a speaker set with
+`a2dp_speaker`).
 
 ```yaml
 select:
