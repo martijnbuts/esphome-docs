@@ -155,7 +155,9 @@ text_sensor:
 The `usb_bluetooth` event platform reports the buttons pressed on the speaker, with the event types `play`, `pause`,
 `stop`, `next` and `previous`. A speaker without absolute volume also sends `volume_up` and `volume_down`. In Home
 Assistant the event can start an automation, for example to skip to the next song in Music Assistant. Which event a
-button sends is up to the speaker: many send `play` both to start and to pause.
+button sends is up to the speaker: many send `play` both to start and to pause. Not every speaker sends these
+buttons: play, pause, next and previous need AVRCP controller category 1, and many small speakers only have
+category 2 (volume). The log says so when the speaker connects.
 
 The volume buttons of a speaker with absolute volume change the speaker's own volume. With `on_speaker_volume`, the
 media player follows it, so Home Assistant shows the same level.
