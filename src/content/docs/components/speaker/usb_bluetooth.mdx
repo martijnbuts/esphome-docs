@@ -5,7 +5,8 @@ title: "USB Bluetooth Speaker"
 import APIRef from '@components/APIRef.astro';
 
 The `usb_bluetooth` speaker platform streams audio to a Bluetooth speaker (an A2DP sink), through a USB Bluetooth
-dongle set up with the [USB Bluetooth](/components/usb_bluetooth/) component and its `a2dp_speaker` option.
+dongle set up with the [USB Bluetooth](/components/usb_bluetooth/) component. The speaker is set with its
+`a2dp_speaker` option or chosen with its [Speaker Select](/components/usb_bluetooth/#speaker-select).
 
 Bluetooth audio is 16-bit stereo at 44.1 kHz. To play audio at another rate, put a
 [Resampler Speaker](/components/speaker/resampler/) in front of this speaker.
@@ -32,8 +33,8 @@ speaker:
 - **buffer_duration** (*Optional*, [Time](/guides/configuration-types/#time)): How much audio the buffer between
   ESPHome and Bluetooth holds. Defaults to `500ms`.
 - **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The
-  [USB Bluetooth](/components/usb_bluetooth/) entry to use. It must have `a2dp_speaker`. Defaults to the only one in
-  YAML.
+  [USB Bluetooth](/components/usb_bluetooth/) entry to use. It must have `a2dp_speaker` or a
+  [Speaker Select](/components/usb_bluetooth/#speaker-select). Defaults to the only one in YAML.
 - All other options from [Speaker Component](/components/speaker/).
 
 The `sample_rate` (`44100`), `num_channels` (`2`) and `bits_per_sample` (`16bit`) are fixed by Bluetooth audio. They

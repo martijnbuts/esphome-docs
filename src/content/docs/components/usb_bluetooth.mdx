@@ -17,8 +17,8 @@ The dongle can be used in two ways:
   [ESP32 BLE](/components/esp32_ble/) then uses the dongle, including the
   [Bluetooth Proxy](/components/bluetooth_proxy/), [ESP32 BLE Tracker](/components/esp32_ble_tracker/) and
   [BLE Client](/components/ble_client/). This gives Bluetooth to chips without a radio, like the ESP32-P4, and lets
-  the radio sit at the end of a USB cable, away from the ESP32. With `a2dp_speaker`, the dongle also streams audio
-  to a Bluetooth speaker over Classic Bluetooth; see [Bluetooth Speaker](#bluetooth-speaker).
+  the radio sit at the end of a USB cable, away from the ESP32. The dongle can also stream audio to a Bluetooth
+  speaker over Classic Bluetooth; see [Bluetooth Speaker](#bluetooth-speaker).
 
 ```yaml
 # Example configuration entry
@@ -46,7 +46,8 @@ The [USB Host](/components/usb_host/) component is loaded automatically; configu
   `usb_bluetooth` entry can set this. Defaults to `false`.
 - **a2dp_speaker** (*Optional*, MAC Address): The Bluetooth address of a speaker (an A2DP sink) to connect to and
   stream audio to, using the [USB Bluetooth Speaker](/components/speaker/usb_bluetooth/) platform. Requires
-  `bluedroid: true`, and turns on Classic Bluetooth (BR/EDR) in Bluedroid next to Bluetooth LE.
+  `bluedroid: true`, and turns on Classic Bluetooth (BR/EDR) in Bluedroid next to Bluetooth LE. Not needed with a
+  [Speaker Select](#speaker-select); a speaker chosen there takes the place of this one.
 
 With `vid` and `pid` left at `0`, the component takes the first connected device with a Bluetooth controller interface
 (USB class `E0`, subclass `01`, protocol `01`) and ignores every other device. More than one entry is allowed, but then
@@ -84,11 +85,13 @@ Only the RTL8761BU has been tested so far.
   can wait for the dongle's replies while it starts.
 - When the dongle is unplugged, Bluetooth is stopped; when it is plugged back in, it is set up again and Bluetooth
   is restarted. Connections made through the dongle are lost when it is unplugged.
-- Without `a2dp_speaker`, only Bluetooth LE is used. Classic Bluetooth is only used for streaming to a speaker.
+- Without `a2dp_speaker` or a [Speaker Select](#speaker-select), only Bluetooth LE is used. Classic Bluetooth is
+  only used for streaming to a speaker.
 
 ## Bluetooth Speaker
 
-With `a2dp_speaker`, the dongle connects to that speaker over Classic Bluetooth and keeps the connection up: it
+The dongle connects to the speaker set with `a2dp_speaker` or chosen with the [Speaker Select](#speaker-select),
+over Classic Bluetooth, and keeps the connection up: it
 connects again when the speaker is switched on or comes back in range, and the speaker can also connect to the
 ESP32 itself. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_bluetooth/) platform, usually through a
 [Speaker Media Player](/components/media_player/speaker/).
@@ -99,7 +102,31 @@ ESP32 itself. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_
   player. A speaker without absolute volume gets the samples scaled instead.
 - The stream starts when audio comes and is suspended a few seconds after it stops; the connection stays.
 - The address of a speaker is shown in the Bluetooth settings of a phone or computer it has been paired with, or on
-  a label on the speaker.
+  a label on the speaker. With the [Speaker Select](#speaker-select) it is not needed.
+- Only the chosen speaker stays connected; another device that connects is disconnected.
+
+### Speaker Select
+
+The `usb_bluetooth` select platform chooses the speaker the way a phone does. Its options are the current speaker,
+the audio devices (speakers, headphones, radios) found by the last search, and **Search for speakers**, which searches
+for 13 seconds. Put the speaker in pairing mode, choose **Search for speakers**, and choose the speaker once it is
+listed. The choice is kept in flash.
+
+```yaml
+select:
+  - platform: usb_bluetooth
+    speaker:
+      name: "Bluetooth speaker"
+```
+
+- **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The `usb_bluetooth` entry to use. It
+  must have `bluedroid: true`. Defaults to the only one in YAML.
+- **speaker** (**Required**): The speaker select. All options from [Select](/components/select/#config-select).
+
+> [!NOTE]
+> Home Assistant reads the options of a select when it connects to the device, so speakers found by a search show
+> up there after the ESPHome integration is reloaded. In the [Web Server](/components/web_server/) they show up
+> after the page is reloaded.
 
 ### Connected Speaker Text Sensor
 
@@ -114,7 +141,7 @@ text_sensor:
 ```
 
 - **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The `usb_bluetooth` entry to use. It
-  must have `a2dp_speaker`. Defaults to the only one in YAML.
+  must have `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to the only one in YAML.
 - **connected_speaker** (*Optional*): The connected speaker. All options from
   [Text Sensor](/components/text_sensor/#config-text_sensor).
 
