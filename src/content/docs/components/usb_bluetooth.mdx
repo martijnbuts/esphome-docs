@@ -101,6 +101,23 @@ ESP32 itself. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_
 - The address of a speaker is shown in the Bluetooth settings of a phone or computer it has been paired with, or on
   a label on the speaker.
 
+### Connected Speaker Text Sensor
+
+The `usb_bluetooth` text sensor platform shows the speaker that is connected, as its name and address (for example
+`SBL 4 A2 (4C:72:74:24:C8:05)`). It is empty while no speaker is connected.
+
+```yaml
+text_sensor:
+  - platform: usb_bluetooth
+    connected_speaker:
+      name: "Connected speaker"
+```
+
+- **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The `usb_bluetooth` entry to use. It
+  must have `a2dp_speaker`. Defaults to the only one in YAML.
+- **connected_speaker** (*Optional*): The connected speaker. All options from
+  [Text Sensor](/components/text_sensor/#config-text_sensor).
+
 ## Examples
 
 ### Bluetooth Proxy on a USB Dongle
