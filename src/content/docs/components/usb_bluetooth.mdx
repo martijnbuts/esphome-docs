@@ -162,6 +162,25 @@ text_sensor:
   (the last attempt failed; the speaker is off or out of range), `Connected` or `Playing`. All options from
   [Text Sensor](/components/text_sensor/#config-text_sensor).
 
+### Speaker Signal Sensor
+
+The `usb_bluetooth` sensor platform shows the signal of the connected speaker, read from the controller every 10
+seconds. The value is the HCI Read RSSI result in dB: `0` means the speaker is inside the controller's ideal receive
+range, a negative value means it is weaker. Many controllers, including the Realtek dongles, report it this way
+rather than as an absolute dBm value. The sensor has no value while no speaker is connected.
+
+```yaml
+sensor:
+  - platform: usb_bluetooth
+    speaker_signal:
+      name: "Speaker signal"
+```
+
+- **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The `usb_bluetooth` entry to use. It
+  must have `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to the only one in YAML.
+- **speaker_signal** (*Optional*): The signal of the connected speaker in dB. All options from
+  [Sensor](/components/sensor/#config-sensor).
+
 ### Speaker Buttons and Volume
 
 The `usb_bluetooth` event platform reports the buttons pressed on the speaker, with the event types `play`, `pause`,
