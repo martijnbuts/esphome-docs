@@ -52,6 +52,11 @@ The [USB Host](/components/usb_host/) component is loaded automatically; configu
   itself. The level from `0` to `1` is in the variable `x`. Use it to let a media player follow the speaker; see
   [Speaker Buttons and Volume](#speaker-buttons-and-volume). Needs `a2dp_speaker` or a
   [Speaker Select](#speaker-select).
+- **pause_ble_scan** (*Optional*, string): When the BLE scan of
+  [ESP32 Bluetooth Low Energy Tracker](/components/esp32_ble_tracker/) (and so the Bluetooth proxy) stops for a while
+  to leave the radio to the speaker. One of `connecting` (while the speaker connects and while a search runs),
+  `streaming` (also for as long as audio streams) or `never`. Only a scan that is running is paused, and it starts
+  again afterwards. Needs `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to `connecting`.
 
 With `vid` and `pid` left at `0`, the component takes the first connected device with a Bluetooth controller interface
 (USB class `E0`, subclass `01`, protocol `01`) and ignores every other device. More than one entry is allowed, but then
@@ -97,7 +102,8 @@ Only the RTL8761BU has been tested so far.
 The dongle connects to the speaker set with `a2dp_speaker` or chosen with the [Speaker Select](#speaker-select),
 over Classic Bluetooth, and keeps the connection up: it
 connects again when the speaker is switched on or comes back in range, and the speaker can also connect to the
-ESP32 itself. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_bluetooth/) platform, usually through a
+ESP32 itself. A speaker that does not answer is tried again after 10 seconds, then after 20 and 40 seconds, and from
+then on once a minute; while there is audio to play it is tried every 3 seconds. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_bluetooth/) platform, usually through a
 [Speaker Media Player](/components/media_player/speaker/).
 
 - The first time, put the speaker in pairing mode. Pairing needs no input: Secure Simple Pairing is confirmed
@@ -114,8 +120,9 @@ ESP32 itself. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_
 The `usb_bluetooth` select platform chooses the speaker the way a phone does. Its options are the current speaker,
 the audio devices (speakers, headphones, radios) found by the last search, and **Search for speakers**, which searches
 for 13 seconds. Put the speaker in pairing mode, choose **Search for speakers**, and choose the speaker once it is
-listed. The choice is kept in flash, with the name the speaker reports when it connects (also for a speaker set with
-`a2dp_speaker`).
+listed. The device with the strongest signal, usually the nearest one, is listed first. A device that sends no name
+during the search is asked for it afterwards, so it is listed by name instead of by its address. The choice is kept
+in flash, with the name the speaker reports when it connects (also for a speaker set with `a2dp_speaker`).
 
 ```yaml
 select:
@@ -133,21 +140,26 @@ select:
 > up there after the ESPHome integration is reloaded. In the [Web Server](/components/web_server/) they show up
 > after the page is reloaded.
 
-### Connected Speaker Text Sensor
+### Speaker Text Sensors
 
 The `usb_bluetooth` text sensor platform shows the speaker that is connected, as its name and address (for example
-`SBL 4 A2 (4C:72:74:24:C8:05)`). It is empty while no speaker is connected.
+`SBL 4 A2 (4C:72:74:24:C8:05)`), and what the link to the speaker is doing.
 
 ```yaml
 text_sensor:
   - platform: usb_bluetooth
     connected_speaker:
       name: "Connected speaker"
+    speaker_status:
+      name: "Speaker status"
 ```
 
 - **usb_bluetooth_id** (*Optional*, [ID](/guides/configuration-types/#id)): The `usb_bluetooth` entry to use. It
   must have `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to the only one in YAML.
-- **connected_speaker** (*Optional*): The connected speaker. All options from
+- **connected_speaker** (*Optional*): The connected speaker; empty while no speaker is connected. All options from
+  [Text Sensor](/components/text_sensor/#config-text_sensor).
+- **speaker_status** (*Optional*): One of `No speaker` (none chosen), `Searching`, `Connecting`, `Not reachable`
+  (the last attempt failed; the speaker is off or out of range), `Connected` or `Playing`. All options from
   [Text Sensor](/components/text_sensor/#config-text_sensor).
 
 ### Speaker Buttons and Volume
