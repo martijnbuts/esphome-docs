@@ -56,7 +56,8 @@ The [USB Host](/components/usb_host/) component is loaded automatically; configu
   [ESP32 Bluetooth Low Energy Tracker](/components/esp32_ble_tracker/) (and so the Bluetooth proxy) stops for a while
   to leave the radio to the speaker. One of `connecting` (while the speaker connects and while a search runs),
   `streaming` (also for as long as audio streams) or `never`. Only a scan that is running is paused, and it starts
-  again afterwards. Needs `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to `connecting`.
+  again afterwards. Needs `a2dp_speaker` or a [Speaker Select](#speaker-select). Defaults to `connecting`. See
+  [Sharing the Radio With the Bluetooth Proxy](#sharing-the-radio-with-the-bluetooth-proxy).
 
 With `vid` and `pid` left at `0`, the component takes the first connected device with a Bluetooth controller interface
 (USB class `E0`, subclass `01`, protocol `01`) and ignores every other device. More than one entry is allowed, but then
@@ -103,7 +104,8 @@ The dongle connects to the speaker set with `a2dp_speaker` or chosen with the [S
 over Classic Bluetooth, and keeps the connection up: it
 connects again when the speaker is switched on or comes back in range, and the speaker can also connect to the
 ESP32 itself. A speaker that does not answer is tried again after 10 seconds, then after 20 and 40 seconds, and from
-then on once a minute; while there is audio to play it is tried every 3 seconds. Audio goes to the [USB Bluetooth Speaker](/components/speaker/usb_bluetooth/) platform, usually through a
+then on once a minute; while there is audio to play it is tried every 3 seconds. Audio goes to the
+[USB Bluetooth Speaker](/components/speaker/usb_bluetooth/) platform, usually through a
 [Speaker Media Player](/components/media_player/speaker/).
 
 - The first time, put the speaker in pairing mode. Pairing needs no input: Secure Simple Pairing is confirmed
@@ -114,6 +116,21 @@ then on once a minute; while there is audio to play it is tried every 3 seconds.
 - The address of a speaker is shown in the Bluetooth settings of a phone or computer it has been paired with, or on
   a label on the speaker. With the [Speaker Select](#speaker-select) it is not needed.
 - Only the chosen speaker stays connected; another device that connects is disconnected.
+
+### Sharing the Radio With the Bluetooth Proxy
+
+Bluetooth LE (the [Bluetooth Proxy](/components/bluetooth_proxy/) and the
+[ESP32 BLE Tracker](/components/esp32_ble_tracker/)) and the Classic Bluetooth link to the speaker use the same
+dongle. The controller shares its radio time between them, as a phone does with earbuds and a watch. Connecting to a
+speaker and searching for speakers need much of that time, so by default the BLE scan pauses for those few seconds
+and starts again afterwards (`pause_ble_scan: connecting`). While audio streams, the scan continues.
+
+If the audio stutters while the proxy is busy, set `pause_ble_scan: streaming`: the scan then also pauses for as
+long as audio streams, and the proxy sees no BLE devices during that time. To keep the proxy coverage in that room,
+run a second Bluetooth proxy on another device nearby; Home Assistant combines the proxies.
+
+A second dongle on the same ESP32 does not help: Bluedroid runs on one controller, so only one `usb_bluetooth` entry
+can set `bluedroid: true`. Another dongle can only be used for detection.
 
 ### Speaker Select
 
