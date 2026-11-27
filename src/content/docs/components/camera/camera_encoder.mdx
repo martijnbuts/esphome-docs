@@ -11,7 +11,8 @@ clients, such as Home Assistant, which expect JPEG-compressed images.
 
 It supports different encoder implementations, such as a ESP32 Camera software JPEG encoder that can be configured with
 options like image quality and incremental encoding. These settings make it possible to balance image
-quality and performance depending on the use case.
+quality and performance depending on the use case. On the ESP32-P4 the `hardware` type uses the chip's JPEG codec
+instead, which is much faster.
 
 > [!NOTE]
 > The default software JPEG encoder enables devices like the ESP32-S3 to stream images.
@@ -25,7 +26,7 @@ camera_encoder:
 
 ## Configuration variables
 
-- **type** (*Optional*): `esp32_camera`
+- **type** (*Optional*): `esp32_camera` or `hardware`. Defaults to `esp32_camera`.
 
 ## esp32_camera Options
 
@@ -41,7 +42,31 @@ camera_encoder:
   - Maximum: 2097152 bytes (2 MB), sufficient for ESP32-S3 and ESP32-P4
   - Default: `1024`.
 
+## hardware Options
+
+The JPEG codec of the ESP32-P4. It is only available on the ESP32-P4.
+
+```yaml
+camera_encoder:
+  type: hardware
+```
+
+- **quality** (*Optional*, int): Sets JPEG compression quality, from `1` to `100`. Defaults to `80`.
+
+- **subsampling** (*Optional*, string): How much colour detail is kept: `4:4:4` (all, sharpest coloured text),
+  `4:2:2` or `4:2:0` (smallest images). Defaults to `4:2:0`. Grayscale images are always encoded as grayscale.
+
+- **buffer_size** (*Optional*, int): Initial size of the output buffer in bytes, from `1024` to `2097152`.
+  Defaults to `65536`.
+
+- **buffer_expand_size** (*Optional*, int): Number of bytes to expand the output buffer by when an image does not
+  fit, from `0` (no expansion) to `2097152`. Defaults to `32768`.
+
+The encoder copies each frame into a buffer of its own that the codec can read, which takes as much memory as one
+raw frame.
+
 ## See Also
 
 - <APIRef text="encoder.h" path="camera/encoder.h" />
 - <APIRef text="esp32_camera_jpeg_encoder.h" path="camera_encoder/esp32_camera_jpeg_encoder.h" />
+- <APIRef text="esp32_hardware_jpeg_encoder.h" path="camera_encoder/esp32_hardware_jpeg_encoder.h" />
