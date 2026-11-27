@@ -42,8 +42,8 @@ lvgl_screenshot:
 ## Limitations
 
 - **Drawing the screen holds up the main loop.** LVGL is not thread-safe, so the screen is drawn in the main loop.
-  On an 800×480 display with an ESP32-S3 this takes about 125 ms, on a 1024×600 display with an ESP32-P4 about
-  75 ms, so the log warns that the component took a long time. Keep `stream_interval` at 1 second or more.
+  On a 1024×600 display with an ESP32-P4 this takes about 50 ms, and longer on slower chips, so the log may warn
+  that the component took a long time. Keep `stream_interval` at 1 second or more.
 - **Only the active screen** is in the picture, not widgets on LVGL's top or system layer, nor anything drawn on the
   display outside LVGL.
 - **Only one camera:** ESPHome supports one camera per device, so this component cannot be combined with, for
@@ -52,14 +52,15 @@ lvgl_screenshot:
 
 ## Example With the ESP32-P4 Hardware Encoder
 
-The JPEG codec of the ESP32-P4 encodes a screenshot of a 1024×600 display in about 12 ms. `4:4:4` keeps small
-coloured text sharp.
+The JPEG codec of the ESP32-P4 takes the encoding off the processor. `4:4:4` keeps small coloured text sharp. A
+screenshot of a 1024×600 display at quality `85` is about 110 kB, so **buffer_size** is set above that.
 
 ```yaml
 camera_encoder:
   type: hardware
   quality: 85
   subsampling: "4:4:4"
+  buffer_size: 131072
 
 lvgl_screenshot:
   name: Screen
