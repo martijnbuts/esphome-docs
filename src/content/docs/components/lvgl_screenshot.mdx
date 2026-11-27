@@ -1,0 +1,72 @@
+---
+description: "Instructions for showing the screen of an LVGL display as a camera in ESPHome"
+title: "LVGL Screenshot"
+---
+
+import APIRef from '@components/APIRef.astro';
+
+The `lvgl_screenshot` component shows what an [LVGL](/components/lvgl/) display shows as a camera entity in
+Home Assistant (or any other native API client), through the [camera](/components/camera/) framework. Use it to
+check a wall panel from a distance, or to make screenshots of a configuration for documentation.
+
+A screenshot is only taken when a client asks for an image, or once per `stream_interval` while a client shows the
+camera as a live stream. LVGL draws the active screen into a buffer in the main loop, and a
+[Camera Encoder](/components/camera/camera_encoder/) turns it into a JPEG image in a task of its own, so the
+display keeps running while the image is encoded. Without a `camera_encoder` block in the configuration, one with
+default settings is added.
+
+Requires an ESP32 with enough RAM for one copy of the screen at 16 bits per pixel (for example 768 KB for a
+800×480 display, so in practice [PSRAM](/components/psram/)).
+
+```yaml
+# Example configuration entry
+lvgl_screenshot:
+  name: Screen
+```
+
+## Configuration Variables
+
+- **name** (*Optional*, string): The name of the camera.
+- **encoder** (*Optional*, [ID](/guides/configuration-types/#id)): The
+  [Camera Encoder](/components/camera/camera_encoder/) to use. Only needed when the configuration has more than one.
+- **stream_interval** (*Optional*, [Time](/guides/configuration-types/#time)): The time between two screenshots
+  while a client shows a live stream. Defaults to `1s`.
+- **icon** (*Optional*, icon): Manually set the icon to use for the camera in the frontend.
+- **internal** (*Optional*, boolean): Mark this component as internal. Internal components will not be exposed to
+  the frontend (like Home Assistant). Only specifying an `id` without a `name` will implicitly set this to true.
+- **disabled_by_default** (*Optional*, boolean): If true, then this entity should not be added to any client's
+  frontend (usually Home Assistant) without the user manually enabling it. Defaults to `false`.
+- **entity_category** (*Optional*, string): The category of the entity. See
+  [generic properties](https://developers.home-assistant.io/docs/core/entity/#generic-properties) for the options.
+
+## Limitations
+
+- **Drawing the screen holds up the main loop.** LVGL is not thread-safe, so the screen is drawn in the main loop.
+  On an 800×480 display with an ESP32-S3 this takes about 125 ms, on a 1024×600 display with an ESP32-P4 about
+  75 ms, so the log warns that the component took a long time. Keep `stream_interval` at 1 second or more.
+- **Only the active screen** is in the picture, not widgets on LVGL's top or system layer, nor anything drawn on the
+  display outside LVGL.
+- **Only one camera:** ESPHome supports one camera per device, so this component cannot be combined with, for
+  example, [ESP32 Camera](/components/esp32_camera/) or [MIPI-CSI Camera](/components/mipi_csi/).
+- **Privacy:** everyone who can see the camera entity sees the screen.
+
+## Example With the ESP32-P4 Hardware Encoder
+
+The JPEG codec of the ESP32-P4 encodes a screenshot of a 1024×600 display in about 12 ms. `4:4:4` keeps small
+coloured text sharp.
+
+```yaml
+camera_encoder:
+  type: hardware
+  quality: 85
+  subsampling: "4:4:4"
+
+lvgl_screenshot:
+  name: Screen
+```
+
+## See Also
+
+- [LVGL Graphics](/components/lvgl/)
+- [Camera Encoder](/components/camera/camera_encoder/)
+- <APIRef text="lvgl_screenshot.h" path="lvgl_screenshot/lvgl_screenshot.h" />
