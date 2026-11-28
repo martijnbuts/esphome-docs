@@ -44,8 +44,8 @@ lvgl_screenshot:
 ## Limitations
 
 - **Drawing the screen holds up the main loop.** LVGL is not thread-safe, so the screen is drawn in the main loop.
-  On a 1024×600 display with an ESP32-P4 this takes about 50 ms, and longer on slower chips, so the log may warn
-  that the component took a long time. Keep `stream_interval` at 1 second or more.
+  This takes about 50 ms on a 1024×600 display with an ESP32-P4 and about 130 ms on an 800×480 display with an
+  ESP32-S3, so the log may warn that the component took a long time. Keep `stream_interval` at 1 second or more.
 - **Only the active screen** is in the picture, not widgets on LVGL's top or system layer, nor anything drawn on the
   display outside LVGL.
 - **Only one camera:** ESPHome supports one camera per device, so this component cannot be combined with, for
