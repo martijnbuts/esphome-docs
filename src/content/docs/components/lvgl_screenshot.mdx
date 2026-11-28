@@ -16,7 +16,9 @@ display keeps running while the image is encoded. Without a `camera_encoder` blo
 default settings is added.
 
 Requires an ESP32 with enough RAM for one copy of the screen at 16 bits per pixel (for example 768 KB for a
-800×480 display, so in practice [PSRAM](/components/psram/)).
+800×480 display, so in practice [PSRAM](/components/psram/)). At boot the component also makes the encoder's output
+buffer room for 2 bits per pixel (96 KB for 800×480), unless its `buffer_size` is larger already, so the first
+screenshot does not have to grow the buffer step by step.
 
 ```yaml
 # Example configuration entry
@@ -52,15 +54,13 @@ lvgl_screenshot:
 
 ## Example With the ESP32-P4 Hardware Encoder
 
-The JPEG codec of the ESP32-P4 takes the encoding off the processor. `4:4:4` keeps small coloured text sharp. A
-screenshot of a 1024×600 display at quality `85` is about 110 kB, so **buffer_size** is set above that.
+The JPEG codec of the ESP32-P4 takes the encoding off the processor. `4:4:4` keeps small coloured text sharp.
 
 ```yaml
 camera_encoder:
   type: hardware
   quality: 85
   subsampling: "4:4:4"
-  buffer_size: 131072
 
 lvgl_screenshot:
   name: Screen
